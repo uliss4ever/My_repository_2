@@ -143,18 +143,18 @@ other), а потом просто вычитаем результаты."""
 
     def __add__(self, other: TimeDelta) -> "Date":
         """Складывает self и некий timedeltа. Возвращает НОВЫЙ инстанс Date, self не меняет (+)"""
-    """Date = self + Timedelta
-    c = a + b
-    a - это self по-моему, b -  Timedelta, оба они не меняются. А с - это результат.
-    То есть если у нас есть d1, то его трогать не надо, надо вернуть ещё один объект с датой - d2.
-    Ну так и пусть будет сперва d2 = d1 (да, это а и с, которые указывают на одно и то же, 
-    но потом-то -> d2 += TimeDelta), и вот у нас есть новый инстанс, не? Или если потом мы поменяем d1, 
-    то и d2 за ней поменяется? Несмотря на то, что оно перестало быть равно d1 и мы к нему прибавили 
-    дельту? Короче тут мне сильно не хватает информации...
-    Как я понимаю "с = а" - выше вот как раз про это. Я давно думаю, что мне надо начать учить си или
-    вообще ассемблер, чтобы понять, как это происходит на низком уровне.
-    Или даже паять платы, без шуток :)"""
+        """Date = self + Timedelta
+        c = a + b
+        a - это self по-моему, b -  Timedelta, оба они не меняются. А с - это результат.
+        То есть если у нас есть d1, то его трогать не надо, надо вернуть ещё один объект с датой - d2.
+        Ну так и пусть будет сперва d2 = d1 (да, это а и с, которые указывают на одно и то же, 
+        но потом-то -> d2 += TimeDelta), и вот у нас есть новый инстанс, не? Или если потом мы поменяем d1, 
+        то и d2 за ней поменяется? Несмотря на то, что оно перестало быть равно d1 и мы к нему прибавили 
+        дельту? """
 
+        c = Date(self.day, self.month, self.year)
+        c += other
+        return c
 
     def __iadd__(self, other: TimeDelta) -> "Date":
         """Добавляет к self некий timedelta меняя сам self (+=)"""
@@ -163,40 +163,19 @@ other), а потом просто вычитаем результаты."""
         если к нашей прибавить 42 дня (или 84 месяца)
         а тут d1 += Timedelta, то есть self поменялся"""
 
-
-        """Ниже код add"""
-        day = self.day
-        month = self.month
-        year = self.year
-
-        all_days = other.day
-        for i in range(other.month):
-            all_days += self.days[i]
-        if other.month > 2:
-            all_days += 1
-
-        """TODO понять это"""
-        for ye in range(self.year):
-            all_days += 366 if self.is_leap_year(ye) else 365
-
-        for i in range(0, all_days):
-            day += 1
-            if self.is_leap_year(year):
-                if day > self.days_leap[month - 1]:
-                    day = 1
-                    month += 1
-                    if month > 12:
-                        month = 1
-                        year += 1
-            else:
-                if day > self.days[month - 1]:
-                    day = 1
-                    month += 1
-                    if month > 12:
-                        month = 1
-                        year += 1
-
-        return Date(day, month, year)
+        self.year += other.year
+        self._month += other.month  # если month (без _) то он проверит его в сеттере и выкинет error
+        self._day += other.day
+        while self._month > 12:
+            self.year += 1
+            self._month -= 12
+        while self._day > self.get_max_day(self.month, self.year):
+            self._day -= self.get_max_day(self.month, self.year)
+            self._month += 1
+            if self._month > 12:
+                self.year += 1
+                self._month -= 12
+        return self
 
 
 def main():
@@ -207,9 +186,9 @@ def main():
     d1.day = 31
     d2 = Date(1, 2, 2020)
     d2.day = 29
-    # d1 += TimeDelta(1)
-    print(repr(d1-d2))
-    print(d2)
+    d1 += TimeDelta(1)
+    # print(repr(d1-d2))
+    print(d1)
 
 if __name__ == "__main__":
     main()
