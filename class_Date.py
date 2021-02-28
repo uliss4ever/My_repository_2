@@ -1,6 +1,8 @@
 from typing import Optional, overload
 import logging
+
 logger = logging.getLogger(__name__)
+
 
 class TimeDelta:
     def __init__(self, days: Optional[int] = None, months: Optional[int] = None, years: Optional[int] = None):
@@ -35,12 +37,13 @@ class Date:
             self.day = int(args[0])
         elif len(args) == 1 and isinstance(args[0], str):
             values = args[0].split('.')
+
             if len(values) != 3:
                 raise ValueError("Incorrect init value")
-            self.day, self.month, self.year = int(values[0]), int(values[1]), int(values[2])
+
+            self.year, self.month, self.day = int(values[2]), int(values[1]), int(values[0])
         else:
             raise ValueError("Incorrect init value")
-
 
     def __str__(self) -> str:
         """Возвращает дату в формате dd.mm.yyyy"""
@@ -48,15 +51,14 @@ class Date:
 
     def __repr__(self) -> str:
         """Возвращает дату в формате Date(day, month, year)"""
-        return f"Date({self.day}, {self._month}, {self._year})"
-
+        return f"Date({self._day}, {self._month}, {self._year})"
 
     @classmethod
     def is_leap_year(cls, year) -> bool:
         """Проверяет, является ли год високосным"""
         if not isinstance(year, int):
             raise ValueError
-        if year % 4 != 0 or (year % 100 == 0 and year % 400 != 0): # надо ли тут cls.year или просто year
+        if year % 4 != 0 or (year % 100 == 0 and year % 400 != 0):  # надо ли тут cls.year или просто year
             return False
         return True
 
@@ -85,11 +87,9 @@ class Date:
     @day.setter
     def day(self, value: int):
         """value от 1 до 31. Проверять значение и корректность даты"""
-        if not Date.is_valid_date(value, self.month, self.year):
+        if not self.is_valid_date(value, self.month, self.year): # self.is_valid.. or Date
             raise ValueError("Incorrect day")
         self._day = value
-
-
 
     @property
     def month(self):
@@ -100,8 +100,12 @@ class Date:
         """value от 1 до 12. Проверять значение и корректность даты"""
         if 1 <= value <= 12:
             self._month = value
+            if not self.is_valid_date(self.day, value, self.year):
+                raise ValueError
         else:
             raise ValueError("Incorrect month")
+
+
 
     @property
     def year(self):
@@ -111,17 +115,12 @@ class Date:
     def year(self, value: int):
         """value от 1 до ... . Проверять значение и корректность даты"""
         self._year = value
+        if not self.is_valid_date(self.day, self.month, value):
+            raise ValueError
 
     def __sub__(self, other: "Date") -> int:
         """Разница между датой self и other (-)"""
 
-        """ для каждой даты (self и other) мы
-считаем количество дней, прошедших с какой-то даты в прошлом (на самом
-деле 0 января 0 года, но мы об этом не задумываемся). Сначала складываем
-дни всех прошедших (уже закончившихся) годов, потом всех прошедших (уже
-закончившихся) месяцев, а потом просто прибавляем номер дня в месяце (т.е.
-для 15 февраля прибавляем 15). Так мы делаем для каждой даты (self и
-other), а потом просто вычитаем результаты."""
         days_my = self.day
         days_other = other.day
         for ye in range(self.year):
@@ -143,14 +142,6 @@ other), а потом просто вычитаем результаты."""
 
     def __add__(self, other: TimeDelta) -> "Date":
         """Складывает self и некий timedeltа. Возвращает НОВЫЙ инстанс Date, self не меняет (+)"""
-        """Date = self + Timedelta
-        c = a + b
-        a - это self по-моему, b -  Timedelta, оба они не меняются. А с - это результат.
-        То есть если у нас есть d1, то его трогать не надо, надо вернуть ещё один объект с датой - d2.
-        Ну так и пусть будет сперва d2 = d1 (да, это а и с, которые указывают на одно и то же, 
-        но потом-то -> d2 += TimeDelta), и вот у нас есть новый инстанс, не? Или если потом мы поменяем d1, 
-        то и d2 за ней поменяется? Несмотря на то, что оно перестало быть равно d1 и мы к нему прибавили 
-        дельту? """
 
         c = Date(self.day, self.month, self.year)
         c += other
@@ -158,10 +149,6 @@ other), а потом просто вычитаем результаты."""
 
     def __iadd__(self, other: TimeDelta) -> "Date":
         """Добавляет к self некий timedelta меняя сам self (+=)"""
-
-        """Тут мы похоже просто переустанавливаем дату, а в add, к примеру, узнаем, какой она будет,
-        если к нашей прибавить 42 дня (или 84 месяца)
-        а тут d1 += Timedelta, то есть self поменялся"""
 
         self.year += other.year
         self._month += other.month  # если month (без _) то он проверит его в сеттере и выкинет error
@@ -183,12 +170,19 @@ def main():
     logger.setLevel(logging.DEBUG)
     logger.debug("start main")
     d1 = Date(30, 12, 2021)
+    # print(d1)
+    # print(str(d1))
+    d3 = Date("30.12.2021")
+    # print(d1.day)
     d1.day = 31
-    d2 = Date(1, 2, 2020)
-    d2.day = 29
+    d2 = Date(31, 1, 2020)
+    # d2.day = 29
     d1 += TimeDelta(1)
+    d2.month = 2
+    print(d2.day)
     # print(repr(d1-d2))
-    print(d1)
+    # print(d1)
+
 
 if __name__ == "__main__":
     main()
