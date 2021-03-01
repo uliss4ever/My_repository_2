@@ -84,6 +84,10 @@ class Date:
             return False
         return True
 
+    @classmethod
+    def days_counter(cls, day: int, month: int, year: int):
+        """Считает общее количество дней"""
+
     @property
     def day(self):
         return self._day_value
@@ -122,6 +126,8 @@ class Date:
             raise ValueError
         self._year_value = value
 
+
+
     def __sub__(self, other: "Date") -> int:
         """Разница между датой self и other (-)"""
 
@@ -158,13 +164,13 @@ class Date:
         self._month_value += other.month  # если month (без _) то он проверит его в сеттере и выкинет error
         self._day_value += other.day
         while self._month_value > 12:
-            self.year += 1
+            self._year_value += 1
             self._month_value -= 12
         while self._day_value > self.get_max_day(self.month, self.year):
             self._day_value -= self.get_max_day(self.month, self.year)
             self._month_value += 1
             if self._month_value > 12:
-                self.year += 1
+                self._year_value += 1
                 self._month_value -= 12
         return self
 
@@ -182,7 +188,7 @@ def main():
     d2 = Date(31, 1, 2020)
     # d2.day = 29
     d1 += TimeDelta(1)
-    d2.month = 2
+    d2.month = 3
     print(d2.day)
     # print(repr(d1-d2))
     # print(d1)

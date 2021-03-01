@@ -1,5 +1,5 @@
 import pytest
-from Date.Date import Date, TimeDelta
+from class_Date import Date, TimeDelta
 
 
 @pytest.mark.parametrize("day,month,year,expected", [(1, 12, 2020, "01.12.2020")])
@@ -14,14 +14,14 @@ def test_create_date(day, month, year, expected):
 ])
 def test_time_delta(date, delta, expected):
     d = Date(date)
-    t = TimeDelta(delta[0], delta[1], delta[2])
+    t = TimeDelta(*delta)
     new_d = d + t
     assert new_d.__str__() == expected
 
 
 @pytest.mark.parametrize("date1, date2, expected", [
     ("20.07.2002", "20.07.2002", 0),
-    ("21.07.2002", "20.07.2002", 1)
+    ("21.07.2002", "20.07.2002", -1)
 ])
 def test_sub(date1, date2, expected):
     d1 = Date(date1)
