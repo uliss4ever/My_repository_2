@@ -32,16 +32,21 @@ class Date:
 месяц. Например, 29 число может быть неправильным в феврале, но только
 если год не високосный"""
         if len(args) == 3 and all(isinstance(i, int) for i in args):
-            self.year = int(args[2])
-            self.month = int(args[1])
-            self.day = int(args[0])
+            check_values = self.is_valid_date(args[0], args[1], args[2])
+            if check_values:
+                self._year_value = int(args[2])
+                self._month_value = int(args[1])
+                self._day_value = int(args[0])
         elif len(args) == 1 and isinstance(args[0], str):
             values = args[0].split('.')
 
             if len(values) != 3:
                 raise ValueError("Incorrect init value")
-
-            self.year, self.month, self.day = int(values[2]), int(values[1]), int(values[0])
+            check_values = self.is_valid_date(args[0], args[1], args[2])
+            if check_values:
+                self._year_value = int(values[2])
+                self._month_value = int(values[1])
+                self._day_value = int(values[0])
         else:
             raise ValueError("Incorrect init value")
 
@@ -51,7 +56,7 @@ class Date:
 
     def __repr__(self) -> str:
         """Возвращает дату в формате Date(day, month, year)"""
-        return f"Date({self._day}, {self._month}, {self._year})"
+        return f"Date({self._day_value}, {self._month_value}, {self._year_value})"
 
     @classmethod
     def is_leap_year(cls, year) -> bool:
@@ -75,48 +80,47 @@ class Date:
         """Проверяет, является ли дата корректной"""
         if month < 1 or month > 12:
             return False
-        """TODO: разобраться тут"""
         if day < 0 or day > cls.get_max_day(month, year):
             return False
         return True
 
     @property
     def day(self):
-        return self._day
+        return self._day_value
 
     @day.setter
     def day(self, value: int):
         """value от 1 до 31. Проверять значение и корректность даты"""
         if not self.is_valid_date(value, self.month, self.year): # self.is_valid.. or Date
             raise ValueError("Incorrect day")
-        self._day = value
+        self._day_value = value
 
     @property
     def month(self):
-        return self._month
+        return self._month_value
 
     @month.setter
     def month(self, value: int):
         """value от 1 до 12. Проверять значение и корректность даты"""
-        if 1 <= value <= 12:
-            self._month = value
-            if not self.is_valid_date(self.day, value, self.year):
-                raise ValueError
-        else:
-            raise ValueError("Incorrect month")
+
+        if not self.is_valid_date(self.day, value, self.year):
+            raise ValueError
+        self._month_value = value
+        # else:
+        #     raise ValueError("Incorrect month")
 
 
 
     @property
     def year(self):
-        return self._year
+        return self._year_value
 
     @year.setter
     def year(self, value: int):
         """value от 1 до ... . Проверять значение и корректность даты"""
-        self._year = value
         if not self.is_valid_date(self.day, self.month, value):
             raise ValueError
+        self._year_value = value
 
     def __sub__(self, other: "Date") -> int:
         """Разница между датой self и other (-)"""
@@ -151,17 +155,17 @@ class Date:
         """Добавляет к self некий timedelta меняя сам self (+=)"""
 
         self.year += other.year
-        self._month += other.month  # если month (без _) то он проверит его в сеттере и выкинет error
-        self._day += other.day
-        while self._month > 12:
+        self._month_value += other.month  # если month (без _) то он проверит его в сеттере и выкинет error
+        self._day_value += other.day
+        while self._month_value > 12:
             self.year += 1
-            self._month -= 12
-        while self._day > self.get_max_day(self.month, self.year):
-            self._day -= self.get_max_day(self.month, self.year)
-            self._month += 1
-            if self._month > 12:
+            self._month_value -= 12
+        while self._day_value > self.get_max_day(self.month, self.year):
+            self._day_value -= self.get_max_day(self.month, self.year)
+            self._month_value += 1
+            if self._month_value > 12:
                 self.year += 1
-                self._month -= 12
+                self._month_value -= 12
         return self
 
 
