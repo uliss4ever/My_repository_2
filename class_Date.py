@@ -19,7 +19,7 @@ class Date:
     days_leap = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
     @overload
-    def __init__(self, day: int, month: int, year: int):
+    def __init__(self, day: int , month: int, year: int):
         """Создание даты из трех чисел"""
 
     @overload
@@ -32,7 +32,7 @@ class Date:
 месяц. Например, 29 число может быть неправильным в феврале, но только
 если год не високосный"""
         if len(args) == 3 and all(isinstance(i, int) for i in args):
-            check_values = self.is_valid_date(args[0], args[1], args[2])
+            check_values = self.is_valid_date(int(args[0]), int(args[1]), int(args[2]))
             if check_values:
                 self._year_value = int(args[2])
                 self._month_value = int(args[1])
@@ -42,7 +42,7 @@ class Date:
 
             if len(values) != 3:
                 raise ValueError("Incorrect init value")
-            check_values = self.is_valid_date(args[0], args[1], args[2])
+            check_values = self.is_valid_date(int(values[0]), int(values[1]), int(values[2]))
             if check_values:
                 self._year_value = int(values[2])
                 self._month_value = int(values[1])
@@ -78,9 +78,9 @@ class Date:
     @classmethod
     def is_valid_date(cls, day: int, month: int, year: int):
         """Проверяет, является ли дата корректной"""
-        if month < 1 or month > 12:
+        if  (month) < 1 or  (month) > 12:
             return False
-        if day < 0 or day > cls.get_max_day(month, year):
+        if  (day) < 0 or  (day) > cls.get_max_day(month, year):
             return False
         return True
 
