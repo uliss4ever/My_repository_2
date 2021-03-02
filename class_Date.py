@@ -19,7 +19,7 @@ class Date:
     days_leap = (31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31)
 
     @overload
-    def __init__(self, day: int , month: int, year: int):
+    def __init__(self, day: int, month: int, year: int):
         """Создание даты из трех чисел"""
 
     @overload
@@ -78,9 +78,9 @@ class Date:
     @classmethod
     def is_valid_date(cls, day: int, month: int, year: int):
         """Проверяет, является ли дата корректной"""
-        if  (month) < 1 or  (month) > 12:
+        if month < 1 or month > 12:
             return False
-        if  (day) < 0 or  (day) > cls.get_max_day(month, year):
+        if day < 0 or day > cls.get_max_day(month, year):
             return False
         return True
 
@@ -96,8 +96,7 @@ class Date:
             days += self.days[i]
         if self.is_leap_year(self.year) and self.month > 2:
             days += 1
-
-
+        return days
 
     @property
     def day(self):
@@ -106,7 +105,7 @@ class Date:
     @day.setter
     def day(self, value: int):
         """value от 1 до 31. Проверять значение и корректность даты"""
-        if not self.is_valid_date(value, self.month, self.year): # self.is_valid.. or Date
+        if not self.is_valid_date(value, self.month, self.year):  # self.is_valid.. or Date
             raise ValueError("Incorrect day")
         self._day_value = value
 
@@ -122,8 +121,6 @@ class Date:
             raise ValueError
         self._month_value = value
 
-
-
     @property
     def year(self):
         return self._year_value
@@ -135,15 +132,10 @@ class Date:
             raise ValueError
         self._year_value = value
 
-
-
     def __sub__(self, other: "Date") -> int:
         """Разница между датой self и other (-)"""
+        return self.days_counter() - other.days_counter()
 
-        days_my = self.days_counter(self)
-        days_other = other.days_counter(other)
-
-        return days_my - days_other
 
     def __add__(self, other: TimeDelta) -> "Date":
         """Складывает self и некий timedeltа. Возвращает НОВЫЙ инстанс Date, self не меняет (+)"""
