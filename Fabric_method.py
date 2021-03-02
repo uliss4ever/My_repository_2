@@ -8,8 +8,7 @@
 
 from abc import ABC, abstractmethod
 
-from Patterns import IStructureDriver, JsonFileDriver, SimpleFileDriver
-
+from Patterns import IStructureDriver, JsonFileDriver, PicleFileDriver
 
 class DriverBuilder(ABC):
     @abstractmethod
@@ -30,15 +29,27 @@ class JsonFileBuilder(DriverBuilder):
         return JsonFileDriver(filename)
 
 
-class SimpleFileBuilder(DriverBuilder):
-    ...
+class PicleFileBuilder(DriverBuilder):
+    DEFAULT_NAME = 'untitled.bin'
+
+    @classmethod
+    def build(cls) -> IStructureDriver:
+        filename = input('Введите название picle файла: (.bin)').strip()
+        filename = filename or cls.DEFAULT_NAME
+        if not filename.endswith('.bin'):
+            filename = f'{filename}.bin'
+
+        return PicleFileDriver(filename)
 
 
-class FabricDriverBuilder:
+class DriverFabric:
     DRIVER_BUILDER = {
-        'json_file': JsonFileBuilder
+        'json_file': JsonFileBuilder, 'picle_file': PicleFileBuilder
     }
     DEFAULT_DRIVER = 'json_file'
+    # DEFAULT_DRIVER = 'picle_file'
+
+
 
     @classmethod
     def get_driver(cls):
@@ -50,6 +61,6 @@ class FabricDriverBuilder:
 
 
 if __name__ == '__main__':
-    driver = FabricDriverBuilder.get_driver()
+    driver = DriverFabric.get_driver()
 
 
