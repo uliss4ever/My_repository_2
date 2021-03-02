@@ -84,9 +84,20 @@ class Date:
             return False
         return True
 
-    @classmethod
-    def days_counter(cls, day: int, month: int, year: int):
+    # @classmethod  # я хотела сделать это классметодом, но не уверена
+    # и что, просто передаем в параметры только self ?
+
+    def days_counter(self):
         """Считает общее количество дней"""
+        days = self.day
+        for ye in range(self.year):
+            days += 366 if self.is_leap_year(ye) else 365
+        for i in range(self.month - 1):
+            days += self.days[i]
+        if self.is_leap_year(self.year) and self.month > 2:
+            days += 1
+
+
 
     @property
     def day(self):
@@ -110,8 +121,6 @@ class Date:
         if not self.is_valid_date(self.day, value, self.year):
             raise ValueError
         self._month_value = value
-        # else:
-        #     raise ValueError("Incorrect month")
 
 
 
@@ -131,22 +140,8 @@ class Date:
     def __sub__(self, other: "Date") -> int:
         """Разница между датой self и other (-)"""
 
-        days_my = self.day
-        days_other = other.day
-        for ye in range(self.year):
-            days_my += 366 if self.is_leap_year(ye) else 365
-        for ye in range(other.year):
-            days_other += 366 if self.is_leap_year(ye) else 365
-
-        for i in range(self.month - 1):
-            days_my += self.days[i]
-        for i in range(other.month - 1):
-            days_other += other.days[i]
-
-        if self.is_leap_year(self.year) and self.month > 2:
-            days_my += 1
-        if self.is_leap_year(other.year) and other.month > 2:
-            days_other += 1
+        days_my = self.days_counter(self)
+        days_other = other.days_counter(other)
 
         return days_my - days_other
 
