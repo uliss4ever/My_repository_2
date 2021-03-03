@@ -134,9 +134,11 @@ class LinkedListIterator:
 
 
 class LinkedList:
-    def __init__(self):
+    def __init__(self, node_type=Node):
         self.head = None
         self._size = 0
+        self._node_type = node_type
+
 
     def __str__(self):
         return "->".join(str(node) for node in self._node_iter())
@@ -180,6 +182,128 @@ class LinkedList:
             current_node = current_node.next_node
 
     def append(self, data: Any):
+        new_node = self.tail(data)
+
+        for current_node in self._node_iter():
+            if current_node.next_node is None:  # tail!
+                current_node.next_node = new_node
+                break
+        else:
+            self.head = new_node
+        self._size += 1
+
+    def insert(self, data, index=0):
+        if index < 0 or index > self._size:
+            raise ValueError
+
+        new_node = self.tail(data)
+        self._size += 1
+        if index == 0:
+            new_node.next_node = self.head
+            self.head = new_node
+        else:
+            for i, node in enumerate(self._node_iter()):
+                if i == index - 1:
+                    new_node.next_node = node.next_node
+                    node.next_node = new_node
+
+    def clear(self):
+        self._size = 0
+        self.head = None
+
+    def index(self, data: Any):
+        for i, node in enumerate(self._node_iter()):
+            if node.data == data:
+                return i
+
+        raise ValueError
+
+    def delete(self, index: int):
+        if index < 0 or index >= self._size:
+            raise ValueError
+
+        self._size -= 1
+        if index == 0:
+            self.head = self.head.next_node
+        else:
+            for i, node in enumerate(self._node_iter()):
+                if i == index - 1:
+                    node.next_node = node.next_node.next_node
+
+
+
+"""
+Двусвязный список на основе односвязного списка.
+    Самостоятельное задание. В двусвязном списке должны быть следующие методы:
+    - **`__str__`**
+    - **`__repr__`**
+    - **`__getitem__`**
+    - **`__setitem__`**
+    - **`__len__`**
+    - **`insert`**
+    - **`index`**
+    - **`remove`**
+    - **`append`**
+    - **`__iter__`**
+    Необязательно все эти методы должны быть переопределены в явном виде. По максимуму используйте
+    наследование, если поведение списков в контексте реализации указанных метод схоже.
+    С точки зрения наследования по минимуму перегружайте методы. При необходимости рефакторите базовый класс,
+    чтобы локализовать части кода во вспомогательные функции, которые имеют различное поведение
+    в связном и двусвязном списках.
+    Стремитесь к минимизации кода в дочернем классе.
+    Есть какой-то метод класса DoubleLinkedList хотите отработать в явном виде ещё раз, не возбраняется.
+"""
+
+# ToDo импорт любой вашей реалиазации LinkedList
+
+
+class DoubleLinkedList(LinkedList):
+    def __init__(self, node_type=DoubleNode):
+        super().__init__(node_type)
+        self.tail = None
+
+    def __str__(self):
+        return "<->".join(str(node) for node in self._node_iter())
+
+    # def __len__(self):
+    #     return self._size    Вызываем из родительского класса
+
+    # def __getitem__(self, item):
+    #     if not isinstance(item, int):
+    #         raise TypeError
+    #
+    #     if item >= len(self) or item < 0:
+    #         raise IndexError
+    #
+    #     for i, node in enumerate(self._node_iter()):
+    #         if i == item:
+    #             return node.data
+    #
+    # def __setitem__(self, key, value):
+    #     if not isinstance(key, int):
+    #         raise TypeError
+    #
+    #     if key >= len(self) or key < 0:
+    #         raise IndexError
+    #
+    #     for i, node in enumerate(self._node_iter()):
+    #         if i == key:
+    #             node.data = value
+
+    # def __delitem__(self, key):
+    #     self.delete(key)
+
+    # def __iter__(self):
+    #     for node in self._node_iter():
+    #         yield node.data
+
+    # def _node_iter(self):     # перебираем ноды
+    #     current_node = self.head
+    #     while current_node is not None:
+    #         yield current_node
+    #         current_node = current_node.next_node
+
+    def append(self, data: Any):
         new_node = Node(data)
 
         for current_node in self._node_iter():
@@ -188,7 +312,6 @@ class LinkedList:
                 break
         else:
             self.head = new_node
-
         self._size += 1
 
     def insert(self, data, index=0):
