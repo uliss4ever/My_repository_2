@@ -182,7 +182,7 @@ class LinkedList:
             current_node = current_node.next_node
 
     def append(self, data: Any):
-        new_node = self.tail(data)
+        new_node = self._node_type(data)
 
         for current_node in self._node_iter():
             if current_node.next_node is None:  # tail!
@@ -196,7 +196,7 @@ class LinkedList:
         if index < 0 or index > self._size:
             raise ValueError
 
-        new_node = self.tail(data)
+        new_node = self._node_type(data)
         self._size += 1
         if index == 0:
             new_node.next_node = self.head

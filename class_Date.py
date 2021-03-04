@@ -37,6 +37,8 @@ class Date:
                 self._year_value = int(args[2])
                 self._month_value = int(args[1])
                 self._day_value = int(args[0])
+            else:
+                raise ValueError('Incorrect date')     # что лучше сказать
         elif len(args) == 1 and isinstance(args[0], str):
             values = args[0].split('.')
 
@@ -47,6 +49,8 @@ class Date:
                 self._year_value = int(values[2])
                 self._month_value = int(values[1])
                 self._day_value = int(values[0])
+            else:
+                raise ValueError('Incorrect date')
         else:
             raise ValueError("Incorrect init value")
 
@@ -84,8 +88,6 @@ class Date:
             return False
         return True
 
-    # @classmethod  # я хотела сделать это классметодом, но не уверена
-    # и что, просто передаем в параметры только self ?
 
     def days_counter(self):
         """Считает общее количество дней"""
