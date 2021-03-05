@@ -46,13 +46,27 @@ class JsonFileDriver(IStructureDriver):
 
 
 class PicleFileDriver(IStructureDriver):
-    ...
+    def __init__(self, filename: str):
+        self._filename = filename
+
+
+    def read(self) -> Sequence:
+        with open(self._filename, "rb") as file:
+            return pickle.load(file)
+
+
+    def write(self, data: Sequence) -> None:
+        with open(self._filename, "wb") as file:
+            pickle.dump(data, file)
 
 def main():
-    driver: IStructureDriver = JsonFileDriver("/Users/evgeniakalinina/Desktop/smfile ")
+    driver1: IStructureDriver = JsonFileDriver("/Users/evgeniakalinina/Desktop/smfile")
+    driver2: IStructureDriver = PicleFileDriver("/Users/evgeniakalinina/Desktop/smbin")
     a = [2, 4, 6]
-    driver.write(a)
-    print(driver.read())
+    driver1.write(a)
+    print(driver1.read())
+    driver2.write(a)
+    print(driver2.read())
 
 if __name__ == '__main__':
     main()

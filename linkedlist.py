@@ -10,9 +10,11 @@ from typing import Sequence
 from abc import ABC, abstractmethod
 import json
 import pickle
-
-
+import sys
+import weakref
 class IStructureDriver(ABC):
+
+
     @abstractmethod
     def read(self) -> Sequence:
         """
@@ -106,14 +108,14 @@ class DoubleNode(Node):
 
     @property
     def prev_node(self):
-        return self._prev_node
+        return self._prev_node()
 
     @prev_node.setter
     def prev_node(self, value):
         if value is not None and not isinstance(value, Node):
             raise ValueError
 
-        self._prev_node = value
+        self._prev_node = weakref.ref(value)
 
 
 # не используется
@@ -145,9 +147,8 @@ class LinkedList:
 
     def __len__(self):
         return self._size
-
-    def __getitem__(self, item):
-        if not isinstance(item, int):
+    def _get_node_(self, item):
+        if not isinstance(item, int):  # item - индекс
             raise TypeError
 
         if item >= len(self) or item < 0:
@@ -155,18 +156,13 @@ class LinkedList:
 
         for i, node in enumerate(self._node_iter()):
             if i == item:
-                return node.data
+                return node
+
+    def __getitem__(self, item):
+        return self._get_node_(item).data
 
     def __setitem__(self, key, value):
-        if not isinstance(key, int):
-            raise TypeError
-
-        if key >= len(self) or key < 0:
-            raise IndexError
-
-        for i, node in enumerate(self._node_iter()):
-            if i == key:
-                node.data = value
+        self._get_node_(key).data = value
 
     def __delitem__(self, key):
         self.delete(key)
@@ -265,92 +261,91 @@ class DoubleLinkedList(LinkedList):
     def __str__(self):
         return "<->".join(str(node) for node in self._node_iter())
 
-    # def __len__(self):
-    #     return self._size    Вызываем из родительского класса
 
-    # def __getitem__(self, item):
-    #     if not isinstance(item, int):
-    #         raise TypeError
-    #
-    #     if item >= len(self) or item < 0:
-    #         raise IndexError
-    #
-    #     for i, node in enumerate(self._node_iter()):
-    #         if i == item:
-    #             return node.data
-    #
-    # def __setitem__(self, key, value):
-    #     if not isinstance(key, int):
-    #         raise TypeError
-    #
-    #     if key >= len(self) or key < 0:
-    #         raise IndexError
-    #
-    #     for i, node in enumerate(self._node_iter()):
-    #         if i == key:
-    #             node.data = value
+    def _node_iter_rev(self):     # перебираем ноды в обратном порядке
+        current_node = self.tail
+        while current_node is not None:
+            yield current_node
+            current_node = current_node.prev_node
 
-    # def __delitem__(self, key):
-    #     self.delete(key)
 
-    # def __iter__(self):
-    #     for node in self._node_iter():
-    #         yield node.data
+    def _get_node_(self, item):
+        if not isinstance(item, int):  # item - индекс
+            raise TypeError
 
-    # def _node_iter(self):     # перебираем ноды
-    #     current_node = self.head
-    #     while current_node is not None:
-    #         yield current_node
-    #         current_node = current_node.next_node
+        if item >= len(self) or item < 0:
+            raise IndexError
+        if item < self._size/2:
+            return super()._get_node_(item)
+
+        for i, node in enumerate(self._node_iter_rev()):
+            if i == self._size - 1 -item:
+                return node
+
 
     def append(self, data: Any):
-        new_node = Node(data)
-
-        for current_node in self._node_iter():
-            if current_node.next_node is None:  # tail!
-                current_node.next_node = new_node
-                break
-        else:
+        new_node = self._node_type(data)
+        if self._size == 0:
             self.head = new_node
+            self.tail = new_node
+        else:
+            old_node = self.tail
+            self.tail = new_node
+            old_node.next_node = new_node
+            new_node.prev_node = old_node
         self._size += 1
 
-    def insert(self, data, index=0):
+
+    def insert(self, data, index=0):      # код повторяется и вообще пока не всё ясно
         if index < 0 or index > self._size:
             raise ValueError
 
-        new_node = Node(data)
+        new_node = self._node_type(data)
         self._size += 1
         if index == 0:
             new_node.next_node = self.head
             self.head = new_node
+            old_node = self.head.next_node
+            old_node.prev_node = new_node
         else:
-            for i, node in enumerate(self._node_iter()):
-                if i == index - 1:
-                    new_node.next_node = node.next_node
-                    node.next_node = new_node
+            if index < self._size/2:
+                for i, node in enumerate(self._node_iter()):
+                    if i == index - 1:
+                        old_node = new_node.next_node
+                        old_node.next_node = new_node
+                        new_node.prev_node = old_node
+            elif index >= self._size/2:
+                for i, node in enumerate(self._node_iter_rev()):
+                    if i == index - 1:
+                        old_node = new_node.next_node
+                        old_node.next_node = new_node
+                        new_node.prev_node = old_node
+
 
     def clear(self):
         self._size = 0
         self.head = None
+        self.tail = None     # но это неточно
 
-    def index(self, data: Any):
+    def index(self, data: Any):    # наверное такой же, как родительский метод?
         for i, node in enumerate(self._node_iter()):
             if node.data == data:
                 return i
-
         raise ValueError
 
-    def delete(self, index: int):
-        if index < 0 or index >= self._size:
-            raise ValueError
 
-        self._size -= 1
-        if index == 0:
-            self.head = self.head.next_node
-        else:
-            for i, node in enumerate(self._node_iter()):
-                if i == index - 1:
-                    node.next_node = node.next_node.next_node
+"""Не успела :( """
+    # def delete(self, index: int):
+    #     if index < 0 or index >= self._size:
+    #         raise ValueError
+    #
+    #     self._size -= 1
+    #     if index == 0:
+    #         self.head = self.head.next_node
+    #     else:
+    #         for i, node in enumerate(self._node_iter()):
+    #             if i == index - 1:
+    #                 node.next_node = node.next_node.next_node
 
 
 class LinkedListWithDriver(LinkedList):
@@ -366,7 +361,7 @@ class LinkedListWithDriver(LinkedList):
     def write(self):
         ll_as_list = [item for item in self]
         self._driver.write(ll_as_list)
-        ...
+
 
 def main():
     driver = PicleFileDriver("some.bin")

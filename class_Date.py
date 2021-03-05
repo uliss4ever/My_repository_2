@@ -120,7 +120,7 @@ class Date:
         """value от 1 до 12. Проверять значение и корректность даты"""
 
         if not self.is_valid_date(self.day, value, self.year):
-            raise ValueError
+            raise ValueError("Incorrect month")
         self._month_value = value
 
     @property
@@ -131,7 +131,7 @@ class Date:
     def year(self, value: int):
         """value от 1 до ... . Проверять значение и корректность даты"""
         if not self.is_valid_date(self.day, self.month, value):
-            raise ValueError
+            raise ValueError("Incorrect year")
         self._year_value = value
 
     def __sub__(self, other: "Date") -> int:
@@ -171,7 +171,9 @@ def main():
     d1 = Date(30, 12, 2021)
     # print(d1)
     # print(str(d1))
-    d3 = Date("30.12.2021")
+    d3 = Date("29.02.2020")
+    d3.year = 2021
+    print(d3)
     # print(d1.day)
     d1.day = 31
     d2 = Date(31, 1, 2020)

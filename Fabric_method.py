@@ -62,5 +62,6 @@ class DriverFabric:
 
 if __name__ == '__main__':
     driver = DriverFabric.get_driver()
+    print(driver.read())
 
 
