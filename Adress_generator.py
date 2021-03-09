@@ -1,4 +1,4 @@
-import random
+import random   # эксперименты на гитхабе
 import json
 import re
 
